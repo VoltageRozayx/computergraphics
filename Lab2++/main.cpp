@@ -913,17 +913,20 @@ void create_animation(const string& obj_filename, const string& output_gif = "an
 }
 
 int main() {
+    system("mkdir colors");
+    system("mkdir shapes");
+    system("mkdir model");
     // Генерация одноканальной картинки
     unsigned char* greyimage = new unsigned char[W * H];
 
     // Чёрная картинка
     for (int i = 0; i < H * W; i++) greyimage[i] = 0;
-    lodepng::encode("blackkartinka.png", greyimage, W, H, LCT_GREY, 8);
+    lodepng::encode("colors/blackkartinka.png", greyimage, W, H, LCT_GREY, 8);
     cout << "Generated black." << endl;
 
     // Белая картинка
     for (int i = 0; i < H * W; i++) greyimage[i] = 255;
-    lodepng::encode("whitekartinka.png", greyimage, W, H, LCT_GREY, 8);
+    lodepng::encode("colors/whitekartinka.png", greyimage, W, H, LCT_GREY, 8);
     cout << "Generated white." << endl;
 
     // Произвольная картинка
@@ -931,7 +934,7 @@ int main() {
         for (int x = 0; x < W; x++)
             greyimage[x + W * y] = (x + y) / 2 < 256 ? (x + y) / 2 : 255;
 
-    lodepng::encode("gradkartinka.png", greyimage, W, H, LCT_GREY, 8);
+    lodepng::encode("colors/gradkartinka.png", greyimage, W, H, LCT_GREY, 8);
     cout << "Generated gradient." << endl;
 
     // Произвольная картинка #2
@@ -939,25 +942,25 @@ int main() {
         for (int x = 0; x < W; x++)
             greyimage[x + x * y] = (x + y) % 256;
 
-    lodepng::encode("kartinka?.png", greyimage, W, H, LCT_GREY, 8);
+    lodepng::encode("color/kartinka?.png", greyimage, W, H, LCT_GREY, 8);
     cout << "Generated something..." << endl;
 
     // Звезда 1
     for (int i = 0; i < W * H; i++) greyimage[i] = 0;
     star1(greyimage, W, H, 255, 95, 13);
-    lodepng::encode("star1.png", greyimage, W, H, LCT_GREY, 8);
+    lodepng::encode("shapes/star1.png", greyimage, W, H, LCT_GREY, 8);
     cout << "Generated star 1." << endl;
 
     // Звезда 2
     for (int i = 0; i < W * H; i++) greyimage[i] = 0;
     star2(greyimage, W, H, 255, 95, 13);
-    lodepng::encode("star2.png", greyimage, W, H, LCT_GREY, 8);
+    lodepng::encode("shapes/star2.png", greyimage, W, H, LCT_GREY, 8);
     cout << "Generated star 2." << endl;
 
     // Звезда 3
     for (int i = 0; i < W * H; i++) greyimage[i] = 0;
     star3(greyimage, W, H, 255, 95, 13);
-    lodepng::encode("star3.png", greyimage, W, H, LCT_GREY, 8);
+    lodepng::encode("shapes/star3.png", greyimage, W, H, LCT_GREY, 8);
     cout << "Generated star 3." << endl;
 
     delete greyimage;
@@ -969,21 +972,21 @@ int main() {
     for (int i = 0; i < H * W * 3; i += 3) {
         rgbimage[i] = 255; rgbimage[i + 1] = 0; rgbimage[i + 2] = 0;
     }
-    lodepng::encode("redkartinka.png", rgbimage, W, H, LCT_RGB, 8);
+    lodepng::encode("colors/redkartinka.png", rgbimage, W, H, LCT_RGB, 8);
     cout << "Generated red." << endl;
 
     // Зелёная картинка
     for (int i = 0; i < H * W * 3; i += 3) {
         rgbimage[i] = 0; rgbimage[i + 1] = 255; rgbimage[i + 2] = 0;
     }
-    lodepng::encode("greenkartinka.png", rgbimage, W, H, LCT_RGB, 8);
+    lodepng::encode("colors/greenkartinka.png", rgbimage, W, H, LCT_RGB, 8);
     cout << "Generated green." << endl;
 
     // Синяя картинка
     for (int i = 0; i < H * W * 3; i += 3) {
         rgbimage[i] = 0; rgbimage[i + 1] = 0; rgbimage[i + 2] = 255;
     }
-    lodepng::encode("bluekartinka.png", rgbimage, W, H, LCT_RGB, 8);
+    lodepng::encode("colors/bluekartinka.png", rgbimage, W, H, LCT_RGB, 8);
     cout << "Generated blue." << endl;
 
     delete rgbimage;
@@ -997,8 +1000,8 @@ int main() {
     string filename = "model_1.obj";
 
     read_obj(filename, vertices, faces);
-    draw_wireframe_obj(modelimage, 1000, 1000, vertices, faces);
-    lodepng::encode("model_1_wireframe.png", modelimage, 1000, 1000, LCT_GREY, 8);
+    draw_wireframe_obj(modelimage, W, H, vertices, faces);
+    lodepng::encode("model/wireframe.png", modelimage, 1000, 1000, LCT_GREY, 8);
     cout << "Generated wireframe model." << endl;
 
     for (int i = 0; i < 1000 * 1000; i++) modelimage[i] = 0;
@@ -1012,7 +1015,7 @@ int main() {
     transform(vertices, shift, rot_matrix);
 
     draw_wireframe_obj(modelimage, 1000, 1000, vertices, faces);
-    lodepng::encode("model_1_wireframe_rot.png", modelimage, 1000, 1000, LCT_GREY, 8);
+    lodepng::encode("model/wireframe_rot.png", modelimage, 1000, 1000, LCT_GREY, 8);
     cout << "Generated wireframe model rotated." << endl;
 
     delete modelimage;
@@ -1024,7 +1027,7 @@ int main() {
     // shift = {0, -100, 0};
     // transform(vertices, shift, rot_matrix);
     draw_solid_obj_zbuffer(rgbmodelimage, 1000, 1000, vertices, faces);
-    lodepng::encode("model_1_solid.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
+    lodepng::encode("model/solid.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
     cout << "Generated solid model." << endl;
 
     for (int i = 0; i < 1000 * 1000 * 3; i++) rgbmodelimage[i] = 0;
@@ -1038,7 +1041,7 @@ int main() {
 
     // draw_solid_obj_zbuffer(rgbmodelimage, 1000, 1000, vertices, faces, 255, 0, 0);
     draw_normals(rgbmodelimage, 1000, 1000, vertices, faces, 255, 0, 0);
-    lodepng::encode("model_1_solid_rot.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
+    lodepng::encode("model/solid_rot1.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
     cout << "Generated solid model rotated." << endl;
 
     for (int i = 0; i < 1000 * 1000 * 3; i++) rgbmodelimage[i] = 0;
@@ -1052,7 +1055,7 @@ int main() {
 
     draw_solid_obj_zbuffer(rgbmodelimage, 1000, 1000, vertices, faces);
     // debug_normals(rgbmodelimage, 1000, 1000, vertices, faces);
-    lodepng::encode("model_1_solid_hole.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
+    lodepng::encode("model/solid_rot2.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
     cout << "Generated solid model rotated." << endl;
 
     delete rgbmodelimage;
@@ -1076,7 +1079,7 @@ int main() {
     draw_triangle(triangleimage, 1000, 1000, ver, {f2});
     draw_triangle(triangleimage, 1000, 1000, ver, {f3});
 
-    lodepng::encode("triangle1.png", triangleimage, 1000, 1000, LCT_RGB, 8);
+    lodepng::encode("shapes/triangle1.png", triangleimage, 1000, 1000, LCT_RGB, 8);
     cout << "Generated triangle." << std::endl;
 
     delete triangleimage;
