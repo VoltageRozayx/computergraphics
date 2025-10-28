@@ -10,11 +10,11 @@
 
 using namespace std;
 
-static constexpr int H = 200;
-static constexpr int W = 200;
+static constexpr int H = 1000;
+static constexpr int W = 1000;
 
-static constexpr int scale = 1800;
-static constexpr int offsetX = 100;
+static constexpr int scale = 8000;
+static constexpr int offsetX = 500;
 static constexpr int offsetY = 10;
 
 struct GIF {
@@ -860,7 +860,7 @@ void create_animation(const string& obj_filename, const string& output_gif = "an
     Vector3D shift = {0, 0.1, 0};
     transform(vertices, shift, rot_matrix);
 
-    GIF bnuuy_gif(200, 200);
+    GIF bnuuy_gif(W, H);
 
     cout << "Creating " << frames << " frames..." << endl;
     system("mkdir frames");
@@ -876,14 +876,14 @@ void create_animation(const string& obj_filename, const string& output_gif = "an
         transform(temp_vertices, shift, rot_matrix);
 
         // Создаем RGB изображение
-        unsigned char* rgb_image = new unsigned char[200 * 200 * 3];
-        memset(rgb_image, 0, 200 * 200 * 3);
+        unsigned char* rgb_image = new unsigned char[W * H * 3];
+        memset(rgb_image, 0, W * H * 3);
 
-        draw_solid_obj_zbuffer(rgb_image, 200, 200, temp_vertices, faces, 0, 255, 255);
+        draw_solid_obj_zbuffer(rgb_image, W, H, temp_vertices, faces, 0, 255, 255);
 
         // Конвертируем RGB в 8-bit grayscale для GIF
-        unsigned char* gif_frame = new unsigned char[200 * 200];
-        for (int i = 0; i < 200 * 200; i++) {
+        unsigned char* gif_frame = new unsigned char[W * H];
+        for (int i = 0; i < W * H; i++) {
             // Простая конвертация RGB в grayscale
             int r = rgb_image[i * 3];
             int g = rgb_image[i * 3 + 1];
@@ -891,11 +891,11 @@ void create_animation(const string& obj_filename, const string& output_gif = "an
             gif_frame[i] = static_cast<unsigned char>((r + g + b) / 3);
         }
 
-        bnuuy_gif.add_frame(gif_frame, 200, 200); // 200ms delay
+        bnuuy_gif.add_frame(gif_frame, W, H); // 200ms delay
 
         // Сохраняем PNG для отладки
         string frame_name = "frames/frame_" + to_string(frame) + ".png";
-        lodepng::encode(frame_name, rgb_image, 200, 200, LCT_RGB, 8);
+        lodepng::encode(frame_name, rgb_image, W, H, LCT_RGB, 8);
 
         delete[] rgb_image;
 
@@ -992,7 +992,7 @@ int main() {
     delete rgbimage;
 
     // 3D-Модель
-    unsigned char* modelimage = new unsigned char[1000 * 1000];
+    unsigned char* modelimage = new unsigned char[W * H];
     vector<Vertex> vertices;
     vector<Face> faces;
     Matrix4 rot_matrix;
@@ -1001,10 +1001,10 @@ int main() {
 
     read_obj(filename, vertices, faces);
     draw_wireframe_obj(modelimage, W, H, vertices, faces);
-    lodepng::encode("model/wireframe.png", modelimage, 1000, 1000, LCT_GREY, 8);
+    lodepng::encode("model/wireframe.png", modelimage, W, H, LCT_GREY, 8);
     cout << "Generated wireframe model." << endl;
 
-    for (int i = 0; i < 1000 * 1000; i++) modelimage[i] = 0;
+    for (int i = 0; i < W * H; i++) modelimage[i] = 0;
 
     // Повёрнутый
 
@@ -1014,23 +1014,23 @@ int main() {
     shift = {0,0.1,0};
     transform(vertices, shift, rot_matrix);
 
-    draw_wireframe_obj(modelimage, 1000, 1000, vertices, faces);
-    lodepng::encode("model/wireframe_rot.png", modelimage, 1000, 1000, LCT_GREY, 8);
+    draw_wireframe_obj(modelimage, W, H, vertices, faces);
+    lodepng::encode("model/wireframe_rot.png", modelimage, W, H, LCT_GREY, 8);
     cout << "Generated wireframe model rotated." << endl;
 
     delete modelimage;
 
     // Разными цветами
-    unsigned char* rgbmodelimage = new unsigned char[1000 * 1000 * 3];
+    unsigned char* rgbmodelimage = new unsigned char[W * H * 3];
     read_obj(filename, vertices, faces);
     // rot_matrix = rotationZ(180*M_PI/180);
     // shift = {0, -100, 0};
     // transform(vertices, shift, rot_matrix);
-    draw_solid_obj_zbuffer(rgbmodelimage, 1000, 1000, vertices, faces);
-    lodepng::encode("model/solid.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
+    draw_solid_obj_zbuffer(rgbmodelimage, W, H, vertices, faces);
+    lodepng::encode("model/solid.png", rgbmodelimage, W, H, LCT_RGB, 8);
     cout << "Generated solid model." << endl;
 
-    for (int i = 0; i < 1000 * 1000 * 3; i++) rgbmodelimage[i] = 0;
+    for (int i = 0; i < W * H * 3; i++) rgbmodelimage[i] = 0;
 
     // Повёрнутый
     read_obj(filename, vertices, faces);
@@ -1039,12 +1039,12 @@ int main() {
     shift = {0,0.1,0};
     transform(vertices, shift, rot_matrix);
 
-    // draw_solid_obj_zbuffer(rgbmodelimage, 1000, 1000, vertices, faces, 255, 0, 0);
-    draw_normals(rgbmodelimage, 1000, 1000, vertices, faces, 255, 0, 0);
-    lodepng::encode("model/solid_rot1.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
+    // draw_solid_obj_zbuffer(rgbmodelimage, W, H, vertices, faces, 255, 0, 0);
+    draw_normals(rgbmodelimage, W, H, vertices, faces, 255, 0, 0);
+    lodepng::encode("model/solid_rot1.png", rgbmodelimage, W, H, LCT_RGB, 8);
     cout << "Generated solid model rotated." << endl;
 
-    for (int i = 0; i < 1000 * 1000 * 3; i++) rgbmodelimage[i] = 0;
+    for (int i = 0; i < W * H * 3; i++) rgbmodelimage[i] = 0;
 
     // Повёрнутый
     read_obj(filename, vertices, faces);
@@ -1053,15 +1053,15 @@ int main() {
     shift = {0,0.05,0};
     transform(vertices, shift, rot_matrix);
 
-    draw_solid_obj_zbuffer(rgbmodelimage, 1000, 1000, vertices, faces);
-    // debug_normals(rgbmodelimage, 1000, 1000, vertices, faces);
-    lodepng::encode("model/solid_rot2.png", rgbmodelimage, 1000, 1000, LCT_RGB, 8);
+    draw_solid_obj_zbuffer(rgbmodelimage, W, H, vertices, faces);
+    // debug_normals(rgbmodelimage, W, H, vertices, faces);
+    lodepng::encode("model/solid_rot2.png", rgbmodelimage, W, H, LCT_RGB, 8);
     cout << "Generated solid model rotated." << endl;
 
     delete rgbmodelimage;
 
     // Отрисовка треугольников
-    unsigned char* triangleimage = new unsigned char[1000 * 1000 * 3];
+    unsigned char* triangleimage = new unsigned char[W * H * 3];
     vector<Vertex> ver = {{0.031709, 0.025774, -0.020613},
         {0.018666, 0.026160, -0.028820},
         {0.034755, 0.028198, -0.016804},
@@ -1075,11 +1075,11 @@ int main() {
     Face f1 = {0,1,2};
     Face f2 = {3,4,5};
     Face f3 = {6,7,8};
-    draw_triangle(triangleimage, 1000, 1000, ver, {f1});
-    draw_triangle(triangleimage, 1000, 1000, ver, {f2});
-    draw_triangle(triangleimage, 1000, 1000, ver, {f3});
+    draw_triangle(triangleimage, W, H, ver, {f1});
+    draw_triangle(triangleimage, W, H, ver, {f2});
+    draw_triangle(triangleimage, W, H, ver, {f3});
 
-    lodepng::encode("shapes/triangle1.png", triangleimage, 1000, 1000, LCT_RGB, 8);
+    lodepng::encode("shapes/triangle1.png", triangleimage, W, H, LCT_RGB, 8);
     cout << "Generated triangle." << std::endl;
 
     delete triangleimage;
