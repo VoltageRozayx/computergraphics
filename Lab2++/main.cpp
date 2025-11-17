@@ -13,9 +13,11 @@ using namespace std;
 static constexpr int H = 1000;
 static constexpr int W = 1000;
 
-static constexpr int scale = 8000;
+static constexpr int scaleX = 100;
+static constexpr int scaleY = 50;
 static constexpr int offsetX = 500;
-static constexpr int offsetY = 10;
+static constexpr int offsetY = 700;
+static constexpr double offsetZ = 0.06;
 
 struct GIF {
     vector<unsigned char*> frames;
@@ -493,12 +495,12 @@ void draw_triangle(unsigned char* image, const int& width, const int& height, co
     const Face& face) {
     Vector3D normal = calculateTriangleNormal(vertices[face.v1], vertices[face.v2], vertices[face.v3]);
 
-    double const x0 = scale * vertices[face.v1].x + offsetX;
-    double const y0 = scale * vertices[face.v1].y + offsetY;
-    double const x1 = scale * vertices[face.v2].x + offsetX;
-    double const y1 = scale * vertices[face.v2].y + offsetY;
-    double const x2 = scale * vertices[face.v3].x + offsetX;
-    double const y2 = scale * vertices[face.v3].y + offsetY;
+    double const x0 = scaleX * vertices[face.v1].x + offsetX;
+    double const y0 = scaleY * vertices[face.v1].y + offsetY;
+    double const x1 = scaleX * vertices[face.v2].x + offsetX;
+    double const y1 = scaleY * vertices[face.v2].y + offsetY;
+    double const x2 = scaleX * vertices[face.v3].x + offsetX;
+    double const y2 = scaleY * vertices[face.v3].y + offsetY;
 
     int x_min = max(0, (int)floor(min(min(x0, x1), x2)));
     int x_max = min(width-1, (int)ceil(max(max(x0, x1), x2)));
@@ -526,12 +528,12 @@ void draw_triangle(unsigned char* image, const int& width, const int& height, co
 void draw_triangle(unsigned char* image, const int& width, const int& height, const vector<Vertex>& vertices,
     const Face& face, unsigned char r, unsigned char g, unsigned char b) {
 
-    double const x0 = scale * vertices[face.v1].x + offsetX;
-    double const y0 = scale * vertices[face.v1].y + offsetY;
-    double const x1 = scale * vertices[face.v2].x + offsetX;
-    double const y1 = scale * vertices[face.v2].y + offsetY;
-    double const x2 = scale * vertices[face.v3].x + offsetX;
-    double const y2 = scale * vertices[face.v3].y + offsetY;
+    double const x0 = scaleX * vertices[face.v1].x + offsetX;
+    double const y0 = scaleY * vertices[face.v1].y + offsetY;
+    double const x1 = scaleX * vertices[face.v2].x + offsetX;
+    double const y1 = scaleY * vertices[face.v2].y + offsetY;
+    double const x2 = scaleX * vertices[face.v3].x + offsetX;
+    double const y2 = scaleY * vertices[face.v3].y + offsetY;
 
     int x_min = max(0, (int)floor(min(min(x0, x1), x2)));
     int x_max = min(width-1, (int)ceil(max(max(x0, x1), x2)));
@@ -556,17 +558,18 @@ void draw_triangle_zbuffer(unsigned char* image, float* zbuffer, const int& widt
                                const vector<Vertex>& vertices, const Face& face) {
     Vector3D normal = calculateTriangleNormal(vertices[face.v1], vertices[face.v2], vertices[face.v3]);
 
-    double const x0 = scale * vertices[face.v1].x + offsetX;
-    double const y0 = scale * vertices[face.v1].y + offsetY;
-    double const z0 = vertices[face.v1].z;  // Z-координаты вершин
+    double const z0 = vertices[face.v1].z + offsetZ;
+    double const z1 = vertices[face.v2].z + offsetZ;
+    double const z2 = vertices[face.v3].z + offsetZ;
 
-    double const x1 = scale * vertices[face.v2].x + offsetX;
-    double const y1 = scale * vertices[face.v2].y + offsetY;
-    double const z1 = vertices[face.v2].z;
+    double const x0 = scaleX * vertices[face.v1].x / z0 + offsetX;
+    double const y0 = scaleY * vertices[face.v1].y / z0 + offsetY;
 
-    double const x2 = scale * vertices[face.v3].x + offsetX;
-    double const y2 = scale * vertices[face.v3].y + offsetY;
-    double const z2 = vertices[face.v3].z;
+    double const x1 = scaleX * vertices[face.v2].x / z1 + offsetX;
+    double const y1 = scaleY * vertices[face.v2].y / z1 + offsetY;
+
+    double const x2 = scaleX * vertices[face.v3].x / z2 + offsetX;
+    double const y2 = scaleY * vertices[face.v3].y / z2 + offsetY;
 
     int x_min = max(0, (int)floor(min(min(x0, x1), x2)));
     int x_max = min(width-1, (int)ceil(max(max(x0, x1), x2)));
@@ -577,7 +580,7 @@ void draw_triangle_zbuffer(unsigned char* image, float* zbuffer, const int& widt
     double dot_light = - (normal.x * LDIR.x + normal.y * LDIR.y + normal.z * LDIR.z);
     dot_light = max(0.0, dot_light);
     int intensity = (int)(250 * dot_light);
-    intensity = max(0, min(255, intensity));
+    // intensity = max(0, min(255, intensity));
 
     for (int i = y_min; i <= y_max; i++) {
         for (int j = x_min; j <= x_max; j++) {
@@ -608,22 +611,26 @@ void draw_triangle_zbuffer(unsigned char* image, float* zbuffer, const int& widt
                                const unsigned char& r, const unsigned char& g, const unsigned char& b) {
     Vector3D normal = calculateTriangleNormal(vertices[face.v1], vertices[face.v2], vertices[face.v3]);
 
-    double const x0 = scale * vertices[face.v1].x + offsetX;
-    double const y0 = scale * vertices[face.v1].y + offsetY;
-    double const z0 = vertices[face.v1].z;  // Z-координаты вершин
+    double const z_0 = vertices[face.v1].z + offsetZ;
+    double const z_1 = vertices[face.v2].z + offsetZ;
+    double const z_2 = vertices[face.v3].z + offsetZ;
 
-    double const x1 = scale * vertices[face.v2].x + offsetX;
-    double const y1 = scale * vertices[face.v2].y + offsetY;
-    double const z1 = vertices[face.v2].z;
+    double const x0 = scaleX * vertices[face.v1].x / z_0 + offsetX;
+    double const y0 = scaleY * vertices[face.v1].y / z_0 + offsetY;
+    double const z0 = z_0;
 
-    double const x2 = scale * vertices[face.v3].x + offsetX;
-    double const y2 = scale * vertices[face.v3].y + offsetY;
-    double const z2 = vertices[face.v3].z;
+    double const x1 = scaleX * vertices[face.v2].x / z_1 + offsetX;
+    double const y1 = scaleY * vertices[face.v2].y / z_1 + offsetY;
+    double const z1 = z_1;
+
+    double const x2 = scaleX * vertices[face.v3].x / z_2 + offsetX;
+    double const y2 = scaleY * vertices[face.v3].y / z_2 + offsetY;
+    double const z2 = z_2;
 
     int x_min = max(0, (int)floor(min(min(x0, x1), x2)));
     int x_max = min(width-1, (int)ceil(max(max(x0, x1), x2)));
     int y_min = max(0, (int)floor(min(min(y0, y1), y2)));
-    int y_max = min(height-1, (int)ceil(max(max(y0, y1), y2)));
+    int y_max = min(height - 1, (int)ceil(max(max(y0, y1), y2)));
 
     // Освещение
     double dot_light = - (normal.x * LDIR.x + normal.y * LDIR.y + normal.z * LDIR.z);
@@ -658,17 +665,17 @@ void draw_triangle_zbuffer(unsigned char* image, float* zbuffer, const int& widt
 void draw_wireframe_obj(unsigned char* image, const int& width, const int& height,
              const vector<Vertex>& vertices, const vector<Face>& faces) {
     for (Vertex v : vertices) {
-        int const x = scale * v.x + 500;
-        int const y = scale * v.y + offsetY;
+        int const x = scaleX * v.x + 500;
+        int const y = scaleY * v.y + offsetY;
         if (x > 0 && y > 0 && x < width && y < height) image[y * width + x] = 255;
     }
     for (const auto& face : faces) {
-        int const x1 = scale * vertices[face.v1].x + offsetX;
-        int const y1 = scale * vertices[face.v1].y + offsetY;
-        int const x2 = scale * vertices[face.v2].x + offsetX;
-        int const y2 = scale * vertices[face.v2].y + offsetY;
-        int const x3 = scale * vertices[face.v3].x + offsetX;
-        int const y3 = scale * vertices[face.v3].y + offsetY;
+        int const x1 = scaleX * vertices[face.v1].x + offsetX;
+        int const y1 = scaleY * vertices[face.v1].y + offsetY;
+        int const x2 = scaleX * vertices[face.v2].x + offsetX;
+        int const y2 = scaleY * vertices[face.v2].y + offsetY;
+        int const x3 = scaleX * vertices[face.v3].x + offsetX;
+        int const y3 = scaleY * vertices[face.v3].y + offsetY;
         x_loop_line(image, width, height, x1, y1, x2, y2, 255);
         x_loop_line(image, width, height, x2, y2, x3, y3, 255);
         x_loop_line(image, width, height, x3, y3, x1, y1, 255);
@@ -699,7 +706,7 @@ void draw_solid_obj_zbuffer(unsigned char* image, const int& width, const int& h
 
     float* zbuffer = new float[width * height];
     for (int i = 0; i < width * height; i++) {
-        zbuffer[i] = 1000.0f; // Большое значение - всё далеко
+        zbuffer[i] = 10000.0f; // Большое значение - всё далеко
     }
 
     for (const auto& face : faces) {
@@ -726,7 +733,7 @@ void draw_solid_obj_zbuffer(unsigned char* image, const int& width, const int& h
 
     float* zbuffer = new float[width * height];
     for (int i = 0; i < width * height; i++) {
-        zbuffer[i] = 1000.0f; // Большое значение - всё далеко
+        zbuffer[i] = 10000.0f; // Большое значение - всё далеко
     }
 
     for (const auto& face : faces) {
@@ -759,10 +766,10 @@ void draw_normals(unsigned char* image, const int& width, const int& height,
         double cy = (vertices[face.v1].y + vertices[face.v2].y + vertices[face.v3].y) / 3;
 
         // Отрисовка нормали в 3D пространстве
-        int x1 = scale * cx + offsetX;
-        int y1 = scale * cy + offsetY;
-        int x2 = scale * (cx + normal.x * 0.001) + offsetX;
-        int y2 = scale * (cy + normal.y * 0.001) + offsetY;
+        int x1 = scaleX * cx + offsetX;
+        int y1 = scaleY * cy + offsetY;
+        int x2 = scaleX * (cx + normal.x * 0.001) + offsetX;
+        int y2 = scaleY * (cy + normal.y * 0.001) + offsetY;
 
         // Цвет нормали в зависимости от направления
         // int color = 128;
@@ -797,10 +804,10 @@ void draw_normals(unsigned char* image, const int& width, const int& height,
         double cy = (vertices[face.v1].y + vertices[face.v2].y + vertices[face.v3].y) / 3;
 
         // Отрисовка нормали в 3D пространстве
-        int x1 = scale * cx + offsetX;
-        int y1 = scale * cy + offsetY;
-        int x2 = scale * (cx + normal.x * 0.001) + offsetX;
-        int y2 = scale * (cy + normal.y * 0.001) + offsetY;
+        int x1 = scaleX * cx + offsetX;
+        int y1 = scaleY * cy + offsetY;
+        int x2 = scaleX * (cx + normal.x * 0.001) + offsetX;
+        int y2 = scaleY * (cy + normal.y * 0.001) + offsetY;
 
         // Цвет нормали в зависимости от направления
         // int color = 128;
@@ -857,7 +864,7 @@ void create_animation(const string& obj_filename, const string& output_gif = "an
     read_obj(obj_filename, vertices, faces);
     double angle = M_PI;
     Matrix4 rot_matrix = rotationX(angle);
-    Vector3D shift = {0, 0.1, 0};
+    Vector3D shift = {0, 0.05, 0};
     transform(vertices, shift, rot_matrix);
 
     GIF bnuuy_gif(W, H);
@@ -1036,11 +1043,11 @@ int main() {
     read_obj(filename, vertices, faces);
     rot_matrix = multiply_matrices(rotationY(-90*M_PI/180), rotationX(0*M_PI/180));
     rot_matrix = multiply_matrices(rot_matrix, rotationZ(180*M_PI/180));
-    shift = {0,0.1,0};
+    shift = {0,0.03,0};
     transform(vertices, shift, rot_matrix);
 
-    // draw_solid_obj_zbuffer(rgbmodelimage, W, H, vertices, faces, 255, 0, 0);
-    draw_normals(rgbmodelimage, W, H, vertices, faces, 255, 0, 0);
+    draw_solid_obj_zbuffer(rgbmodelimage, W, H, vertices, faces, 255, 0, 0);
+    // draw_normals(rgbmodelimage, W, H, vertices, faces, 255, 0, 0);
     lodepng::encode("model/solid_rot1.png", rgbmodelimage, W, H, LCT_RGB, 8);
     cout << "Generated solid model rotated." << endl;
 
@@ -1065,12 +1072,12 @@ int main() {
     vector<Vertex> ver = {{0.031709, 0.025774, -0.020613},
         {0.018666, 0.026160, -0.028820},
         {0.034755, 0.028198, -0.016804},
-        {0.1, 0.2, 0.2},
-        {0.1, -0.9, 0.01},
-        {0.1, -0.4, 0.3},
-        {0.2, -0.1, 0.2},
-        {0.15, 0.01, -0.2},
-        {0.1, 0.05, -0.11}};
+        {0.0142, 0.0228, 0.02},
+        {0.01, -0.0921, 0.01},
+        {0.03412, -0.04, 0.03},
+        {0.2, -0.01337, 0.02},
+        {0.15, 0.01, -0.02},
+        {0.01488, 0.05, -0.11}};
 
     Face f1 = {0,1,2};
     Face f2 = {3,4,5};
